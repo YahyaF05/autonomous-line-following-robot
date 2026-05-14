@@ -1,0 +1,96 @@
+////================================================code for paul walker with ultra sonic sensor=========================================================\\\
+
+
+
+int LS = 2; 
+int RS = 3; 
+int LM1 = 6; 
+int LM2 = 7; 
+int RM1 = 4; 
+int RM2 = 5; 
+
+int trigPin = 8;
+int echoPin = 9;
+
+int leftSpeed = 250; 
+int rightSpeed = 130; 
+
+static bool isBlocked = false;
+
+void setup() {
+  pinMode(LS, INPUT);
+  pinMode(RS, INPUT);
+  pinMode(LM1, OUTPUT);
+  pinMode(LM2, OUTPUT);
+  pinMode(RM1, OUTPUT);
+  pinMode(RM2, OUTPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+}
+
+void loop() {
+  long distance = getAverageDistance();
+
+  if (distance > 0 && distance <= 25) { 
+    isBlocked = true;
+  } 
+  else if (distance > 30 || distance == 0) { 
+    isBlocked = false;
+  }
+
+  if (isBlocked) {
+    stopMotors();
+  } 
+  else {
+    if(!(digitalRead(LS)) && !(digitalRead(RS))) {
+      // Both Forward
+      analogWrite(LM1, leftSpeed);
+      digitalWrite(LM2, LOW);
+      analogWrite(RM1, rightSpeed);
+      digitalWrite(RM2, LOW);
+    }
+    else if(digitalRead(LS) && !(digitalRead(RS))) {
+      // Sharp Turn Right: Left forward, Right BACKWARD
+      analogWrite(LM1, leftSpeed);
+      digitalWrite(LM2, LOW);
+      digitalWrite(RM1, LOW);
+      analogWrite(RM2, rightSpeed); // Reversed
+    }
+    else if(!(digitalRead(LS)) && digitalRead(RS)) {
+      // Sharp Turn Left: Right forward, Left BACKWARD
+      digitalWrite(LM1, LOW);
+      analogWrite(LM2, leftSpeed); // Reversed
+      analogWrite(RM1, rightSpeed);
+      digitalWrite(RM2, LOW);
+    }
+    else {
+      stopMotors();
+    }
+
+    // Keep the pulse for control
+    delay(30); 
+    stopMotors();
+    delay(10); 
+  }
+}
+
+long getAverageDistance() {
+  long sum = 0;
+  for(int i = 0; i < 2; i++) {
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+    long duration = pulseIn(echoPin, HIGH, 20000); 
+    sum += (duration / 2) / 29.1;
+  }
+  return sum / 2;
+}
+
+void stopMotors() {
+  digitalWrite(LM1, LOW);
+  digitalWrite(LM2, LOW);
+  digitalWrite(RM1, LOW);
+  digitalWrite(RM2, LOW);
+}
