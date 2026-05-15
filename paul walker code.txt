@@ -1,7 +1,3 @@
-////================================================code for paul walker with ultra sonic sensor=========================================================\\\
-
-
-
 int LS = 2; 
 int RS = 3; 
 int LM1 = 6; 
@@ -13,7 +9,7 @@ int trigPin = 8;
 int echoPin = 9;
 
 int leftSpeed = 250; 
-int rightSpeed = 130; 
+int rightSpeed = 250; 
 
 static bool isBlocked = false;
 
@@ -29,9 +25,11 @@ void setup() {
 }
 
 void loop() {
+  // 1. Check Distance
   long distance = getAverageDistance();
 
-  if (distance > 0 && distance <= 25) { 
+  // 2. Braking Logic (25cm Stop / 30cm Resume)
+  if (distance > 0 && distance <= 15) { 
     isBlocked = true;
   } 
   else if (distance > 30 || distance == 0) { 
@@ -42,6 +40,7 @@ void loop() {
     stopMotors();
   } 
   else {
+    // 3. Pulse Movement Phase (Brings back controlled speed)
     if(!(digitalRead(LS)) && !(digitalRead(RS))) {
       // Both Forward
       analogWrite(LM1, leftSpeed);
@@ -50,16 +49,16 @@ void loop() {
       digitalWrite(RM2, LOW);
     }
     else if(digitalRead(LS) && !(digitalRead(RS))) {
-      // Sharp Turn Right: Left forward, Right BACKWARD
+      // Pivot Turn Right: Left forward, Right STOPPED
       analogWrite(LM1, leftSpeed);
       digitalWrite(LM2, LOW);
-      digitalWrite(RM1, LOW);
-      analogWrite(RM2, rightSpeed); // Reversed
+      digitalWrite(RM1, LOW); 
+      digitalWrite(RM2, LOW); 
     }
     else if(!(digitalRead(LS)) && digitalRead(RS)) {
-      // Sharp Turn Left: Right forward, Left BACKWARD
-      digitalWrite(LM1, LOW);
-      analogWrite(LM2, leftSpeed); // Reversed
+      // Pivot Turn Left: Right forward, Left STOPPED
+      digitalWrite(LM1, LOW); 
+      digitalWrite(LM2, LOW); 
       analogWrite(RM1, rightSpeed);
       digitalWrite(RM2, LOW);
     }
@@ -67,10 +66,11 @@ void loop() {
       stopMotors();
     }
 
-    // Keep the pulse for control
-    delay(30); 
-    stopMotors();
-    delay(10); 
+    // --- PULSE LOGIC CONTROL ---
+    // This creates the "burst" movement to keep the car's speed manageable
+    delay(35);        // Move for 30 milliseconds
+    stopMotors();     // Stop briefly
+    delay(5);        // Rest for 10 milliseconds
   }
 }
 
