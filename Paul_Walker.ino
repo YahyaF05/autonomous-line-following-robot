@@ -25,10 +25,10 @@ void setup() {
 }
 
 void loop() {
-  // 1. Check Distance
+  //Check Distance
   long distance = getAverageDistance();
 
-  // 2. Braking Logic (25cm Stop / 30cm Resume)
+  // Braking Logic (25cm Stop / 30cm Resume)
   if (distance > 0 && distance <= 15) { 
     isBlocked = true;
   } 
@@ -40,7 +40,7 @@ void loop() {
     stopMotors();
   } 
   else {
-    // 3. Pulse Movement Phase (Brings back controlled speed)
+    // Pulse Movement Phase (Brings back controlled speed)
     if(!(digitalRead(LS)) && !(digitalRead(RS))) {
       // Both Forward
       analogWrite(LM1, leftSpeed);
